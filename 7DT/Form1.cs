@@ -12,106 +12,158 @@ using TentacleSoftware.Telnet;
 
 namespace _7DT
 {
-    public partial class Form1 : Form
+    public partial class formMain : Form
     {
         System.Threading.CancellationToken _serverCancellationToken;
         TelnetClient _server;
         string _serverEndpoint;
-        bool _connected;
+        public static ServerData _serverData = new ServerData();
 
-        public Form1()
+        public formMain()
         {
             InitializeComponent();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Logger.SetUpLogOutput(textLog);
-            Logger.AddLog("Initializing Logger..");
+            this.Text = "7 Days to Die Telnet Tool";
+
+            //Set the textbox for default log output
+            Logger.SetUpLogOutput(richTextLog);
+            
+            //set the default server address and port
             _serverEndpoint = "127.0.0.1:8081";
-            _connected = false;
+
+            //set program connection variables to defaults
+            DisconnectFromServer();
         }
 
         private void buttonConnect_Click(object sender, EventArgs e)
         {
             string serverEndpoint = _serverEndpoint;
 
-            if (_connected)
+            if (_serverData.TelnetState != TelnetState.disconnected)
             {
-                _server.Disconnect();
-                _connected = false;
-                this.buttonConnect.Text = "Connect to Server";
+                DisconnectFromServer();
                 return;
             }
 
-            //Get the server uri
+            //Get the server uri, if they hit cancel, we just return
             if (Utilities.ShowInputDialog(ref serverEndpoint, "Server IP:Port") == DialogResult.Cancel)
                 return;
             
-            Logger.AddLog("IPEndpoint: " + serverEndpoint);
+            //Create an IPEndpoint from the serverEndpoint inputbox, then connect to it
 
-            IPEndPoint endpoint;
-            endpoint = Utilities.CreateIPEndPoint(serverEndpoint);
-
-            connectToServer(endpoint.Address.ToString(), endpoint.Port, TimeSpan.FromSeconds(0.3));
+            try
+            {
+                IPEndPoint endpoint;
+                endpoint = Utilities.CreateIPEndPoint(serverEndpoint);
+                
+                ConnectToServer(endpoint.Address.ToString(), endpoint.Port, TimeSpan.FromSeconds(0.3));
+            } catch (Exception ex)
+            {
+                Logger.AddLog("Connect Err: " + ex.Message);
+            }
 
         }
 
-        private void connectToServer(string ip, int port, TimeSpan delay)
+        private void ConnectToServer(string ip, int port, TimeSpan delay)
         {
 
-            if (_connected)
-            {
-                _server.Disconnect();
-                _connected = false;
-            }
+            if (_serverData.TelnetState != TelnetState.disconnected)
+                DisconnectFromServer();
 
-            Logger.AddLog("connectToServer.. Delay: " + delay.ToString() + ". EndPoint: " + ip + ": " + port);
+            Logger.AddLog("Attempting to connect to " + ip + ": " + port);
+            
+            //create our new TelnetClient using the previous IPEndpoint
             _server = new TelnetClient(ip, port, delay, _serverCancellationToken);
 
+            //setup our event handlers
             _server.ConnectionClosed += ConnectionClosedEvent;
             _server.MessageReceived += MessageReceivedEvent;
+
+            //set the state to Connecting
+            _serverData.TelnetState = TelnetState.connecting;
 
             _server.Connect();
             
         }
 
+        private void DisconnectFromServer()
+        {
+            try
+            {
+                _server.Disconnect();
+            } catch {}
+
+            _serverData.TelnetState = TelnetState.disconnected;
+            _serverData = new ServerData();
+
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke((MethodInvoker)delegate () { this.buttonConnect.Text = "Connect to Server"; ; });
+            } else
+            {
+                this.buttonConnect.Text = "Connect to Server";
+            }
+            return;
+        }
+
         private void MessageReceivedEvent(object sender, string e)
         {
-            if (!_connected)
+            
+            switch (_serverData.TelnetState)
             {
 
-                //if we weren't previously connected, that means it's a new connection..
-                
-                _connected = true;
-                if (this.InvokeRequired)
-                {
-                    this.BeginInvoke((MethodInvoker)delegate () { this.Text = "Connected to " + _serverEndpoint; ; });
-                    this.BeginInvoke((MethodInvoker)delegate () { this.buttonConnect.Text = "Disconnect"; ; });
-                }
+                case TelnetState.connecting:
+                    if (this.InvokeRequired)
+                    {
+                        this.BeginInvoke((MethodInvoker)delegate () { this.Text = "Connected to " + _serverEndpoint; ; });
+                        this.BeginInvoke((MethodInvoker)delegate () { this.buttonConnect.Text = "Disconnect"; ; });
+                    }
 
-                string telnetPass = "";
-                if (Utilities.ShowInputDialog(ref telnetPass, "Password", true) == DialogResult.OK)
-                {
-                    Logger.AddLog("Attempting to login..");
-                    _server.Send(telnetPass + "\n");
-                    return;
-                }
+                    string telnetPass = "";
+                    if (Utilities.ShowInputDialog(ref telnetPass, "Password", true) == DialogResult.OK)
+                    {
+                        _serverData.TelnetState = TelnetState.loggingIn;
+                        Logger.AddLog("Attempting to login..");
+                        _server.Send(telnetPass + "\n");
+                        return;
+                    }
+                    break;
+                    
+                case TelnetState.loggingIn:
+                    //Data received here should be responses to the password field
 
+                    //Wait for "Press 'help' to get a list of all commands.Press 'exit' to end session."
+                    //Process lines received before the above line, then set to connected state.
+                    try
+                    {
+                        if (LoginParser.ParseWelcomeLine(e, ref _serverData.ServerInfo))
+                            return;
+                    } catch (Exception ex)
+                    {
+                        Logger.AddLog(ex.Message);
+                    }
+                    break;
+                    
+
+                case TelnetState.connected:
+                    //Process commands with regex from this point forward
+                    break;
             }
-
+            
             Logger.AddLog(e);
         }
 
         private void ConnectionClosedEvent(object sender, EventArgs e)
         {
-            _connected = false;
-
             if (this.InvokeRequired)
             {
                 this.BeginInvoke((MethodInvoker)delegate () { this.Text = "Disconnected from " + _serverEndpoint; ; });
-                this.BeginInvoke((MethodInvoker)delegate () { this.buttonConnect.Text = "Connect to Server"; ; });
             }
+
+            _serverData.TelnetState = TelnetState.disconnected;
 
             Logger.AddLog("Disconnected from " + _serverEndpoint);
         }
@@ -132,12 +184,31 @@ namespace _7DT
 
         private void SendInput(string text)
         {
-            if (_connected)
+            if (_serverData.TelnetState != TelnetState.disconnected)
             {
-                Logger.AddLog(text);
+                Logger.AddLog("#> " + text);
                 _server.Send(text + "\n");
             }
         }
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            textStatus.Clear();
+
+            textStatus.AppendText("Server Address: " + _serverData.ServerInfo.serverIP + ": " + _serverData.ServerInfo.serverPort + "\n");
+
+            textStatus.AppendText("Server Version: " + _serverData.ServerInfo.serverVersion + "\n");
+            textStatus.AppendText("Server MaxPlayers: " + _serverData.ServerInfo.maxPlayers + "\n");
+
+            textStatus.AppendText("Server Name: " + _serverData.ServerInfo.gameName + "\n");
+            textStatus.AppendText("Server World Name: " + _serverData.ServerInfo.worldName + "\n");
+            
+            textStatus.AppendText("Server Mode: " + _serverData.ServerInfo.gameMode + "\n");
+
+
+            textStatus.AppendText("Server Difficulty: " + _serverData.ServerInfo.difficulty + "\n");
+
+            
+        }
     }
 }

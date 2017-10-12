@@ -44,7 +44,7 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="TentacleSoftware.Telnet">
-      <HintPath>..\..\..\..\..\Desktop\TentacleSoftware.Telnet-master\TentacleSoftware.Telnet\bin\Debug\TentacleSoftware.Telnet.dll</HintPath>
+      <HintPath>.\TentacleSoftware.Telnet.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -54,6 +54,8 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="LoginParser.cs" />
+    <Compile Include="ServerData.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

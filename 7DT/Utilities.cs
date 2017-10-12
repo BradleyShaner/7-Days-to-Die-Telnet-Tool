@@ -11,17 +11,7 @@ namespace _7DT
 {
     class Utilities
     {
-
-        public enum telnetState
-        {
-            connecting = 0,
-            connected,
-            loggingIn,
-            loggedIn,
-            retrievedInfo,
-
-        }
-
+        
         public static IPEndPoint CreateIPEndPoint(string endPoint)
         {
             string[] ep = endPoint.Split(':');
@@ -44,9 +34,7 @@ namespace _7DT
             System.Drawing.Size size = new System.Drawing.Size(200, 70);
             Form inputBox = new Form();
 
-            inputBox.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            inputBox.MinimizeBox = false;
-            inputBox.MaximizeBox = false;
+            inputBox.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             inputBox.ClientSize = size;
             inputBox.Text = title;
 

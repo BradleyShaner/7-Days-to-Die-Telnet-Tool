@@ -10,9 +10,10 @@ namespace _7DT
     
     static class Logger
     {
-        static TextBox logOutput;
+        static RichTextBox logOutput;
+        private static object _logLock = new object();
 
-        static public void SetUpLogOutput(TextBox log)
+        static public void SetUpLogOutput(RichTextBox log)
         {
             logOutput = log;
         }
@@ -20,27 +21,17 @@ namespace _7DT
 
         static public void AddLog(string text)
         {
-            if (logOutput.InvokeRequired)
+            lock (_logLock)
             {
-                logOutput.BeginInvoke((MethodInvoker)delegate () { logOutput.AppendText(text + "\n"); ; });
+                if (logOutput.InvokeRequired)
+                {
+                    logOutput.BeginInvoke((MethodInvoker)delegate () { logOutput.AppendText(text + "\n"); ; });
+                }
+                else
+                {
+                    logOutput.AppendText(text + "\n");
+                }
             }
-            else
-            {
-                logOutput.AppendText(text + "\n");
-            }
-
-            /*
-            try
-            {
-                logOutput.AppendText(text + "\n");
-
-            } catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Logger error");
-            }
-            */
-
         }
-
     }
 }

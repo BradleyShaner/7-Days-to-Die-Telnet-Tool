@@ -10,7 +10,6 @@ namespace _7DT
     {
         public _ServerConfig ServerInfo = new _ServerConfig();
         public _ServerStats ServerStats = new _ServerStats();
-        public List<PlayerInfo> players = new List<PlayerInfo>();
         public TelnetState TelnetState = new TelnetState();
     }
 

@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TentacleSoftware.Telnet;
@@ -18,6 +19,7 @@ namespace _7DT
         TelnetClient _server;
         string _serverEndpoint;
         public static ServerData _serverData = new ServerData();
+        public static List<PlayerInfo> players = new List<PlayerInfo>();
 
         public formMain()
         {
@@ -95,9 +97,9 @@ namespace _7DT
             {
                 _server.Disconnect();
             } catch {}
-
-            _serverData.TelnetState = TelnetState.disconnected;
+            
             _serverData = new ServerData();
+            _serverData.TelnetState = TelnetState.disconnected;
 
             if (this.InvokeRequired)
             {
@@ -196,19 +198,39 @@ namespace _7DT
             textStatus.Clear();
 
             textStatus.AppendText("Server Address: " + _serverData.ServerInfo.serverIP + ": " + _serverData.ServerInfo.serverPort + "\n");
-
             textStatus.AppendText("Server Version: " + _serverData.ServerInfo.serverVersion + "\n");
             textStatus.AppendText("Server MaxPlayers: " + _serverData.ServerInfo.maxPlayers + "\n");
-
             textStatus.AppendText("Server Name: " + _serverData.ServerInfo.gameName + "\n");
             textStatus.AppendText("Server World Name: " + _serverData.ServerInfo.worldName + "\n");
-            
             textStatus.AppendText("Server Mode: " + _serverData.ServerInfo.gameMode + "\n");
-
-
             textStatus.AppendText("Server Difficulty: " + _serverData.ServerInfo.difficulty + "\n");
-
             
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            string test = "";
+            Utilities.ShowInputDialog(ref test, "test");
+            Regex reg = new Regex(@"^(?:(\S+) (?:\S+)) (\S{3})(.+$)");
+
+            var match = reg.Match(test);
+
+            Logger.AddLog(match.Groups[1].ToString());
+
+            Logger.AddLog(match.Groups[2].ToString());
+
+            Logger.AddLog(match.Groups[3].ToString());
+
+            if (test.Count(c => c == ',') >= 16)
+            {
+                List<string> l = test.Split(',').ToList();
+                Logger.AddLog(l.Count.ToString());
+                foreach (string s in l) {
+                    Logger.AddLog(s);
+                }
+            }
+
+
         }
     }
 }

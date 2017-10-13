@@ -55,6 +55,8 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="LoginParser.cs" />
+    <Compile Include="PlayerListParser.cs" />
+    <Compile Include="PlayerManager.cs" />
     <Compile Include="ServerData.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Program.cs" />

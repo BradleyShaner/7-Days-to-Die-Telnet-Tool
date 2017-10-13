@@ -68,7 +68,7 @@ namespace _7DT
                 return true;
             }
 
-            return false;
+            return true;
         }
     }
 }

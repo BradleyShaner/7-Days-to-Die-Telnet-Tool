@@ -39,6 +39,7 @@
             this.textInput = new System.Windows.Forms.TextBox();
             this.buttonConnect = new System.Windows.Forms.Button();
             this.richTextLog = new System.Windows.Forms.RichTextBox();
+            this.button2 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage5.SuspendLayout();
@@ -118,6 +119,7 @@
             // 
             // tabPage5
             // 
+            this.tabPage5.Controls.Add(this.button2);
             this.tabPage5.Controls.Add(this.richTextLog);
             this.tabPage5.Controls.Add(this.textInput);
             this.tabPage5.Location = new System.Drawing.Point(4, 22);
@@ -157,6 +159,16 @@
             this.richTextLog.TabIndex = 5;
             this.richTextLog.Text = "";
             // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(603, 73);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(59, 51);
+            this.button2.TabIndex = 6;
+            this.button2.Text = "button2";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
             // formMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -189,6 +201,7 @@
         private System.Windows.Forms.TextBox textStatus;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.RichTextBox richTextLog;
+        private System.Windows.Forms.Button button2;
     }
 }
 

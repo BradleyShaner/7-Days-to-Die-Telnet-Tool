@@ -44,13 +44,13 @@ namespace _7DT
         public string uptime;
         public string heap;
         public string heapMax;
-        public int chunks;
-        public int cgo;
-        public int playerCount;
-        public int zom;
-        public int ent;
-        public int items;
-        public int co;
+        public string chunks;
+        public string cgo;
+        public string playerCount;
+        public string zom;
+        public string ent;
+        public string items;
+        public string co;
         public string RSS;
     }
 

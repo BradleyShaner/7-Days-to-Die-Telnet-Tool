@@ -34,7 +34,7 @@ namespace _7DT
             Logger.SetUpLogOutput(richTextLog);
             
             //set the default server address and port
-            _serverEndpoint = "127.0.0.1:8081";
+            _serverEndpoint = "192.168.10.150:8081";
 
             //set program connection variables to defaults
             DisconnectFromServer();
@@ -141,7 +141,7 @@ namespace _7DT
                     //Process lines received before the above line, then set to connected state.
                     try
                     {
-                        if (LoginParser.ParseWelcomeLine(e, ref _serverData.ServerInfo))
+                        if (AuthParser.ParseWelcomeLine(e, ref _serverData.ServerInfo))
                             return;
                     } catch (Exception ex)
                     {
@@ -152,6 +152,43 @@ namespace _7DT
 
                 case TelnetState.connected:
                     //Process commands with regex from this point forward
+                    
+                    Regex reg = new Regex(@"^(\d{4}-\d{2}-\d{2}T\S+) (?:\S+) (?<log>\w+)");
+
+                    var match = reg.Match(e);
+                    string logData;
+                    
+                    if (match.Success)
+                    {
+                        string logType = match.Groups[2].ToString();
+                        Logger.AddLog("LogType: " + logType);
+                        logData = e.Substring(match.Index + match.Length);
+
+                        switch (logType)
+                        {
+                            case "INF":
+
+                                //returns true if the passed line is a server status tick
+                                if (ServerStatusParser.ParseStatusLine(e, ref _serverData.ServerStats))
+                                    return;
+
+
+
+                                break;
+
+                            case "WRN":
+                                Logger.AddLog("Warning: " + logData);
+                                return;
+                                break;
+
+                            default:
+                                Logger.AddLog("Unknown logType: " + logType + ":" + logData);
+                                break;
+                        }
+                        
+                        Logger.AddLog("Initial match found, but no matches found for this data.");
+                    }
+
                     break;
             }
             
@@ -209,25 +246,33 @@ namespace _7DT
 
         private void button2_Click(object sender, EventArgs e)
         {
-            string test = "";
-            Utilities.ShowInputDialog(ref test, "test");
-            Regex reg = new Regex(@"^(?:(\S+) (?:\S+)) (\S{3})(.+$)");
+            string ee = "";
+            Utilities.ShowInputDialog(ref ee, "test");
+            Regex reg = new Regex(@"^(\d{4}-\d{2}-\d{2}T\S+) (?:\S+) (?<log>\w+)");
+            
+            var match = reg.Match(ee);
+            string logData;
 
-            var match = reg.Match(test);
+            Logger.AddLog("Match: " + match.Success);
 
-            Logger.AddLog(match.Groups[1].ToString());
-
-            Logger.AddLog(match.Groups[2].ToString());
-
-            Logger.AddLog(match.Groups[3].ToString());
-
-            if (test.Count(c => c == ',') >= 16)
+            if (match.Success)
             {
-                List<string> l = test.Split(',').ToList();
-                Logger.AddLog(l.Count.ToString());
-                foreach (string s in l) {
-                    Logger.AddLog(s);
+                string logType = match.Groups[2].ToString();
+                Logger.AddLog("LogType: " + logType);
+                logData = ee.Substring(match.Index + match.Length);
+
+                if (ServerStatusParser.ParseStatusLine(ee, ref _serverData.ServerStats))
+                {
+
+                    Logger.AddLog("Uptime: " +_serverData.ServerStats.uptime);
+                    Logger.AddLog("Players: " + _serverData.ServerStats.playerCount);
+                    Logger.AddLog("Items: " + _serverData.ServerStats.items);
+                    Logger.AddLog("Heap: " + _serverData.ServerStats.heap);
+                    return;
                 }
+                    
+
+                Logger.AddLog("Initial match found, but no matches found for this data.");
             }
 
 

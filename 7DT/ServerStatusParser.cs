@@ -14,7 +14,7 @@ namespace _7DT
             //passed string should look like
             // Time: 2275.38m FPS: 73.19 Heap: 580.6MB Max: 948.1MB Chunks: 380 CGO: 0 Ply: 0 Zom: 6 Ent: 0 (23) Items: 0 CO: 0 RSS: 1530.9MB
 
-            Regex regex = new Regex(@"(?:Time: (?<time>.+) FPS: (?<fps>.+) Heap: (?<heap>.+) Max: (?<max>.+) Chunks: (?<chunk>.+) CGO: (?<cgo>.+) Ply: (?<players>.+) Zom: (?<zombies>.+) Ent: (?<entities>.+) Items: (?<items>.+) CO: (?<co>.+) RSS: (?<rss>\S+))");
+            Regex regex = new Regex(@"^(?:Time: (?<time>.+) FPS: (?<fps>.+) Heap: (?<heap>.+) Max: (?<max>.+) Chunks: (?<chunk>.+) CGO: (?<cgo>.+) Ply: (?<players>.+) Zom: (?<zombies>.+) Ent: (?<entities>.+) Items: (?<items>.+) CO: (?<co>.+) RSS: (?<rss>\S+))");
 
             GroupCollection groups = regex.Match(line).Groups;
 

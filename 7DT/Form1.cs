@@ -16,7 +16,7 @@ namespace _7DT
     public partial class formMain : Form
     {
         System.Threading.CancellationToken _serverCancellationToken;
-        TelnetClient _server;
+        public static TelnetClient _server;
         string _serverEndpoint;
         public static ServerData _serverData = new ServerData();
         public static List<PlayerInfo> players = new List<PlayerInfo>();
@@ -161,18 +161,19 @@ namespace _7DT
                     if (match.Success)
                     {
                         string logType = match.Groups[2].ToString();
-                        Logger.AddLog("LogType: " + logType);
-                        logData = e.Substring(match.Index + match.Length);
+                        logData = e.Substring(match.Index + match.Length).Trim();
+                        //Logger.AddLog("LogType: " + logType + logData);
 
                         switch (logType)
                         {
                             case "INF":
 
                                 //returns true if the passed line is a server status tick
-                                if (ServerStatusParser.ParseStatusLine(e, ref _serverData.ServerStats))
+                                if (ServerStatusParser.ParseStatusLine(logData, ref _serverData.ServerStats))
                                     return;
 
-
+                                if (ChatParser.ParseChatLine(logData))
+                                    return;
 
                                 break;
 
@@ -248,34 +249,21 @@ namespace _7DT
         {
             string ee = "";
             Utilities.ShowInputDialog(ref ee, "test");
-            Regex reg = new Regex(@"^(\d{4}-\d{2}-\d{2}T\S+) (?:\S+) (?<log>\w+)");
+            Regex regex = new Regex(@"(?:Chat: ')(?<player>\w+)(': !tp )(?<target>\w+)");
             
-            var match = reg.Match(ee);
-            string logData;
+            GroupCollection groups = regex.Match(ee).Groups;
 
-            Logger.AddLog("Match: " + match.Success);
+            var grpNames = regex.GetGroupNames();
 
-            if (match.Success)
-            {
-                string logType = match.Groups[2].ToString();
-                Logger.AddLog("LogType: " + logType);
-                logData = ee.Substring(match.Index + match.Length);
-
-                if (ServerStatusParser.ParseStatusLine(ee, ref _serverData.ServerStats))
+            
+                foreach (var grpName in grpNames)
                 {
-
-                    Logger.AddLog("Uptime: " +_serverData.ServerStats.uptime);
-                    Logger.AddLog("Players: " + _serverData.ServerStats.playerCount);
-                    Logger.AddLog("Items: " + _serverData.ServerStats.items);
-                    Logger.AddLog("Heap: " + _serverData.ServerStats.heap);
-                    return;
+                    Logger.AddLog(string.Format("Group: {0} Value: {1}", grpName, groups[grpName].Value));
                 }
-                    
-
-                Logger.AddLog("Initial match found, but no matches found for this data.");
-            }
-
-
+                
+               
+            Logger.AddLog("Initial match found, but no matches found for this data.");
+            
         }
     }
 }

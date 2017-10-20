@@ -20,5 +20,16 @@ namespace _7DT
             return false;
         }
 
+        public static bool ParseZombieSpawn(string line)
+        {
+
+        }
+        
+        public static bool ParseAIDirector(string line)
+        {
+
+        }
+
+
     }
 }

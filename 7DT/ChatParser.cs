@@ -31,7 +31,7 @@ namespace _7DT
 
         public static bool ParseMessageLine(string line)
         {
-            Regex regex = new Regex(@"^(Chat: ')(?<player>\w+)(': )(?<message>.+)");
+            Regex regex = new Regex(@"(?:to 'Global'\): ')(?<player>\w+)(?:': )(?<message>.+)");
 
             GroupCollection groups = regex.Match(line).Groups;
             //Logger.AddLog(line);
@@ -57,7 +57,7 @@ namespace _7DT
 
         public static bool ParseTeleportLine(string line)
         { 
-            Regex regex = new Regex(@"^(?:Chat: ')(?<player>\w+)(?:': !tp )(?<target>\w+)");
+            Regex regex = new Regex(@"(?:to 'Global'\): ')(?<player>\w+)(?:': !tp )(?<target>\w+)");
 
             GroupCollection groups = regex.Match(line).Groups;
             //Logger.AddLog(line);

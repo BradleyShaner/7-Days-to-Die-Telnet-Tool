@@ -22,12 +22,12 @@ namespace _7DT
 
         public static bool ParseZombieSpawn(string line)
         {
-
+            return false;
         }
         
         public static bool ParseAIDirector(string line)
         {
-
+            return false;
         }
 
 

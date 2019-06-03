@@ -3,7 +3,7 @@
 
 Simple tool to administrate a 7DtD server.
 
-Ultimately, will allow logging in, managing online users and their de/buffs, running commands, and simplifying log output.
+Pretty useless, never completed. You should use a mod/plugin for a dedicated server instead at this point.
 
 
 # Credits
